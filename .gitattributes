@@ -1,0 +1,26 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Java source files
+*.java eol=lf
+
+# YAML/YML configuration
+*.yml eol=lf
+
+# Gradle build files
+*.gradle eol=lf
+
+# Markdown documentation
+*.md eol=lf
+
+# Shell scripts
+*.sh eol=lf
+
+# Batch files (must use CRLF on Windows)
+*.bat text eol=crlf
+
+# Properties files
+*.properties eol=lf
+
+# TOML files
+*.toml eol=lf

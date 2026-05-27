@@ -1,0 +1,20 @@
+[versions]
+spring-boot = "4.0.6"
+spring-dependency-management = "1.1.7"
+rocketmq-a2a = "1.0.9"
+rocketmq-client-java = "5.2.0"
+a2a-sdk = "0.3.3.Final"
+agentscope = "1.0.12"
+
+[libraries]
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+rocketmq-a2a = { module = "org.apache.rocketmq:rocketmq-a2a", version.ref = "rocketmq-a2a" }
+rocketmq-client-java = { module = "org.apache.rocketmq:rocketmq-client-java", version.ref = "rocketmq-client-java" }
+a2a-java-sdk-client = { module = "io.github.a2asdk:a2a-java-sdk-client", version.ref = "a2a-sdk" }
+a2a-java-sdk-spec = { module = "io.github.a2asdk:a2a-java-sdk-spec", version.ref = "a2a-sdk" }
+agentscope = { module = "io.agentscope:agentscope", version.ref = "agentscope" }
+
+[plugins]
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

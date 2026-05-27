@@ -1,55 +1,44 @@
 plugins {
-    id 'java'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
 group = 'com.orch'
 version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+allprojects {
+    repositories {
+        mavenCentral()
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/spring' }
     }
 }
 
-repositories {
-    mavenCentral()
-    maven { url 'https://maven.aliyun.com/repository/public' }
-    maven { url 'https://maven.aliyun.com/repository/spring' }
-}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.boot:spring-boot-dependencies:4.0.6"
+    group = rootProject.group
+    version = rootProject.version
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
-}
 
-// Dependency locking - freeze transitive versions after verification gate passes
-dependencyLocking {
-    lockAllConfigurations()
-}
-
-dependencies {
-    // Spring Boot
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // RocketMQ A2A (exclude Quarkus-based reference-jsonrpc which conflicts with Spring Boot)
-    implementation('org.apache.rocketmq:rocketmq-a2a:1.0.9') {
-        exclude module: 'a2a-java-sdk-reference-jsonrpc'
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:4.0.6"
+        }
     }
-    implementation 'org.apache.rocketmq:rocketmq-client-java:5.2.0'
 
-    // A2A Java SDK (client only - NOT reference-jsonrpc which is Quarkus-based)
-    implementation 'io.github.a2asdk:a2a-java-sdk-client:0.3.3.Final'
+    // Dependency locking - freeze transitive versions after verification gate passes
+    dependencyLocking {
+        lockAllConfigurations()
+    }
 
-    // A2A Spec SDK (entities, enums, JSON-RPC envelope types)
-    // Published under io.github.a2asdk group (NOT io.a2a which does not exist)
-    implementation 'io.github.a2asdk:a2a-java-sdk-spec:0.3.3.Final'
-
-    // AgentScope
-    implementation 'io.agentscope:agentscope:1.0.12'
-
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    dependencies {
+        // Testing - common for all submodules
+        testImplementation libs.spring.boot.starter.test
+    }
 }

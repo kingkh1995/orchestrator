@@ -1,0 +1,21 @@
+dependencies {
+    // Spring Boot
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.actuator
+
+    // RocketMQ A2A (exclude Quarkus-based reference-jsonrpc which conflicts with Spring Boot)
+    implementation(libs.rocketmq.a2a) {
+        exclude module: 'a2a-java-sdk-reference-jsonrpc'
+    }
+    implementation libs.rocketmq.client.java
+
+    // A2A Java SDK (client only - NOT reference-jsonrpc which is Quarkus-based)
+    implementation libs.a2a.java.sdk.client
+
+    // A2A Spec SDK (entities, enums, JSON-RPC envelope types)
+    // Published under io.github.a2asdk group (NOT io.a2a which does not exist)
+    implementation libs.a2a.java.sdk.spec
+
+    // AgentScope
+    implementation libs.agentscope
+}

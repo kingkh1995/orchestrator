@@ -10,25 +10,25 @@
 
 ## 1. Project Bootstrap
 
-- [ ] 1.1 Create Gradle multi-module project structure (`orchestrator-parent`, `orchestrator-hub`)
-- [ ] 1.2 Configure Gradle Wrapper with Tencent mirror (`https://mirrors.cloud.tencent.com/gradle/gradle-9.5.0-bin.zip`)
-- [ ] 1.3 Configure Aliyun Maven Central repository in root `build.gradle`
-- [ ] 1.4 Import Gradle version catalog (`libs.versions.toml`) for centralized version management
-- [ ] 1.5 Set Java source/target compatibility to 17 with JDK 25 runtime
-- [ ] 1.6 Add `.gitignore` for Gradle (`build/`, `.gradle/`, `!gradle/wrapper/gradle-wrapper.jar`), IntelliJ (`*.iml`, `.idea/`), environment (`.env`, `.env.local`), build outputs (`*.class`, `*.jar`, `*.war`), and OS files (`.DS_Store`, `Thumbs.db`)
-- [ ] 1.7 Add `.gitattributes` with `* text=auto` and `*.java eol=lf`, `*.yml eol=lf`, `*.gradle eol=lf`, `*.md eol=lf` for cross-platform line ending consistency
-- [ ] 1.8 Create `.env.example` with `OPENCODE_API_KEY=sk-your-api-key-here` and a comment directing to Opencode Zen console. Add `.env` to `.gitignore` (so devs can `cp .env.example .env`).
-- [ ] 1.9 Create `settings.gradle` with module inclusion (include `orchestrator-hub`)
-- [ ] 1.10 Early compile gate: run `./gradlew :orchestrator-hub:compileJava` to verify empty project compiles successfully before proceeding
+- [x] 1.1 Create Gradle multi-module project structure (`orchestrator-parent`, `orchestrator-hub`)
+- [x] 1.2 Configure Gradle Wrapper with Tencent mirror (`https://mirrors.cloud.tencent.com/gradle/gradle-9.5.0-bin.zip`)
+- [x] 1.3 Configure Aliyun Maven Central repository in root `build.gradle`
+- [x] 1.4 Import Gradle version catalog (`libs.versions.toml`) for centralized version management
+- [x] 1.5 Set Java source/target compatibility to 17 with JDK 25 runtime
+- [x] 1.6 Add `.gitignore` for Gradle (`build/`, `.gradle/`, `!gradle/wrapper/gradle-wrapper.jar`), IntelliJ (`*.iml`, `.idea/`), environment (`.env`, `.env.local`), build outputs (`*.class`, `.jar`, `*.war`), and OS files (`.DS_Store`, `Thumbs.db`)
+- [x] 1.7 Add `.gitattributes` with `* text=auto` and `*.java eol=lf`, `*.yml eol=lf`, `*.gradle eol=lf`, `*.md eol=lf` for cross-platform line ending consistency
+- [x] 1.8 Create `.env.example` with `OPENCODE_API_KEY=sk-your-api-key-here` and a comment directing to Opencode Zen console. Add `.env` to `.gitignore` (so devs can `cp .env.example .env`).
+- [x] 1.9 Create `settings.gradle` with module inclusion (include `orchestrator-hub`)
+- [x] 1.10 Early compile gate: run `./gradlew :orchestrator-hub:compileJava` to verify empty project compiles successfully before proceeding
 
 ## 2. Hub Server Dependencies
 
-- [ ] 2.1 Add Spring Boot 4.0.6 starter dependencies (`spring-boot-starter-web`, `spring-boot-starter-actuator`)
-- [ ] 2.2 Add `rocketmq-a2a` 1.0.9 and `rocketmq-client-java` 5.2.0
-- [ ] 2.3 Add `a2a-java-sdk-client` 0.3.3.Final only (do NOT add `a2a-java-sdk-reference-jsonrpc` — it's Quarkus-based, incompatible with Spring Boot)
-- [ ] 2.4 Add `agentscope` 1.0.12 (do NOT add `agentscope-a2a-spring-boot-starter` — we implement A2A endpoints manually to avoid coupling)
-- [ ] 2.5 Verify all dependencies resolve with `./gradlew :orchestrator-hub:dependencies`
-- [ ] 2.6 Early compile gate: run `./gradlew :orchestrator-hub:compileJava` to verify controllers and entity classes compile before proceeding to later groups
+- [x] 2.1 Add Spring Boot 4.0.6 starter dependencies (`spring-boot-starter-web`, `spring-boot-starter-actuator`)
+- [x] 2.2 Add `rocketmq-a2a` 1.0.9 and `rocketmq-client-java` 5.2.0
+- [x] 2.3 Add `a2a-java-sdk-client` 0.3.3.Final only (do NOT add `a2a-java-sdk-reference-jsonrpc` — it's Quarkus-based, incompatible with Spring Boot)
+- [x] 2.4 Add `agentscope` 1.0.12 (do NOT add `agentscope-a2a-spring-boot-starter` — we implement A2A endpoints manually to avoid coupling)
+- [x] 2.5 Verify all dependencies resolve with `./gradlew :orchestrator-hub:dependencies`
+- [x] 2.6 Early compile gate: run `./gradlew :orchestrator-hub:compileJava` to verify controllers and entity classes compile before proceeding to later groups
 
 ## 3. A2A Protocol Endpoints (MVP)
 
