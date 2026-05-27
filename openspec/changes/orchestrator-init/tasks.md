@@ -1,12 +1,12 @@
 ## 0. Dependency Verification Gate
 
-- [ ] 0.1 Create minimal `settings.gradle` and `build.gradle` with all declared dependencies (Spring Boot 4.0.6 BOM, rocketmq-a2a 1.0.9, a2a-java-sdk-client 0.3.3.Final, agentscope 1.0.12)
-- [ ] 0.2 Run `./gradlew dependencies` to verify all dependencies resolve on JDK 25
-- [ ] 0.3 If resolution fails, adjust versions to known-compatible releases before proceeding
-- [ ] 0.4 Validate a2a-java-sdk entity Jackson serialization: write a small Java snippet using `ObjectMapper.writeValueAsString(new Task())` and verify JSON output conforms to A2A spec shape (field names, status enum values, envelope structure)
-- [ ] 0.5 Verify `a2a-java-sdk-core` does NOT transitively pull `a2a-java-sdk-reference-jsonrpc` (Quarkus-based, incompatible with Spring Boot). If it does, add Gradle exclusion rule.
-- [ ] 0.6 Generate Gradle lockfile (`./gradlew dependencies --write-locks`) to freeze transitive versions after gate passes
-- [ ] 0.7 **Hard gate**: mark that all subsequent tasks are BLOCKED until 0.1-0.6 all pass
+- [x] 0.1 Create minimal `settings.gradle` and `build.gradle` with all declared dependencies (Spring Boot 4.0.6 BOM, rocketmq-a2a 1.0.9, a2a-java-sdk-client 0.3.3.Final, agentscope 1.0.12)
+- [x] 0.2 Run `./gradlew dependencies` to verify all dependencies resolve on JDK 25
+- [x] 0.3 If resolution fails, adjust versions to known-compatible releases before proceeding
+- [x] 0.4 Validate a2a-java-sdk entity Jackson serialization: write a small Java snippet using `ObjectMapper.writeValueAsString(new Task())` and verify JSON output conforms to A2A spec shape (field names, status enum values, envelope structure)
+- [x] 0.5 Verify `a2a-java-sdk-core` does NOT transitively pull `a2a-java-sdk-reference-jsonrpc` (Quarkus-based, incompatible with Spring Boot). If it does, add Gradle exclusion rule.
+- [x] 0.6 Generate Gradle lockfile (`./gradlew dependencies --write-locks`) to freeze transitive versions after gate passes
+- [x] 0.7 **Hard gate**: mark that all subsequent tasks are BLOCKED until 0.1-0.6 all pass
 
 ## 1. Project Bootstrap
 

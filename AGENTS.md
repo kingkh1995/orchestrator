@@ -7,7 +7,12 @@
 ```
 explore → propose → autoplan → apply → review
    ↑                              |
-   └──────── superpowers (TDD/debug/verify)
+   └── superpowers (TDD/debug/verify)
+
+Apply phase (internal per-task):
+  load using-superpowers → triggers skill awareness
+  → matching superpower skill is loaded and followed
+  → implement → mark task done → repeat for next task
 ```
 
 ## Phase Rules
@@ -18,7 +23,7 @@ explore → propose → autoplan → apply → review
 - **Autoplan before apply**: Design must be reviewed before implementation.
 - **Review before commit**: Run `/review` before any commit.
 - **Explore = read-only**: `/opsx-explore` never writes code.
-- **Apply phase**: Must load `superpowers:using-superpowers` first. Its 1% rule determines which superpowers skill to load next.
+- **Apply phase**: Load `superpowers:using-superpowers` before each `/opsx-apply` task. It triggers automatic skill awareness — matching skills are loaded and strictly followed per task context. Skills override `/opsx-apply` instructions where they conflict.
 
 ## Stage Detection
 
@@ -38,7 +43,7 @@ explore → propose → autoplan → apply → review
 ## Agent Behavior Rules
 
 - **Stage-aware before keyword-aware**: Detect stage first, then match intent. Never skip stage detection.
-- **Recommend, don't auto-execute**: Suggest next skill, wait for user confirmation. Never auto-trigger multiple skills in sequence. Exception: within `/opsx-apply` phase, after user confirms entry, `superpowers:using-superpowers` may be loaded once without additional confirmation. Each subsequent 1% rule skill (TDD/debug/verify) must still be confirmed individually unless user explicitly granted blanket apply-phase permission.
+- **Recommend, don't auto-execute**: Suggest next skill, wait for user confirmation. Never auto-trigger multiple skills in sequence. Exception: within `/opsx-apply` phase, `superpowers:using-superpowers` is loaded before EACH pending task without additional confirmation. Each subsequent superpower skill (TDD/debug/verify) must still be confirmed individually unless user explicitly granted blanket apply-phase permission.
 - **Explore is default entry**: Any vague or unanalyzed request defaults to `/opsx-explore`.
 - **No implementation during explore**: `/opsx-explore` is read-only. Never write code or modify files during exploration.
 - **Workflow bypass resistance**: If user explicitly demands to skip a mandatory phase (e.g., "skip propose", "skip review", "just write code"), warn once: "This violates project workflow policy. Skipping ${phase} is not recommended." Document the override in your response. Proceed only if user reconfirms after the warning.
@@ -89,21 +94,26 @@ When conflicts occur:
 
 ## Apply Phase Rules
 
-When in `/opsx-apply` phase:
-1. Must load `superpowers:using-superpowers` first
-2. Its 1% rule determines next skill:
-   - Coding task → `test-driven-development`
-   - Bug encountered → `systematic-debugging`
-   - Agent development → `subagent-driven-development`
-   - Claiming completion → `verification-before-completion`
-3. If 1% rule references banned skill → reject and continue checking
-4. Banned skills must be rejected even if flowchart suggests them
+When in `/opsx-apply` phase, load `superpowers:using-superpowers` before EACH pending task.
+
+`using-superpowers` triggers skill awareness: check whether any installed superpower skill's description matches the current task context. If a match is found (even 1% chance), load that skill and follow its instructions strictly before implementing.
+
+Common task types and their matching superpower skills (descriptive, not prescriptive — actual determination comes from `using-superpowers`'s native skill-checking mechanism):
+
+| Task context | Likely matching skill | What it enforces |
+|-------------|----------------------|-----------------|
+| Writing new code / behavior change | `test-driven-development` | Red-Green-Refactor; no production code without failing test first |
+| Bug / test failure / unexpected behavior | `systematic-debugging` | Root cause investigation before any fix; 4-phase process |
+| About to claim task done | `verification-before-completion` | Verify evidence before claiming success; 5-step gate function |
+| Independent tasks from a plan | `subagent-driven-development` | Fresh subagent per task; two-stage spec + quality review |
+| Before merging / completing a feature | `requesting-code-review` | Structured code review with severity-gated feedback |
+
+**Skills override `/opsx-apply` instructions where they conflict.** The superpower skill's instructions (TDD cycle, debug phases, verification gate, etc.) define the actual implementation workflow for each task.
 
 ## Hard Rules
 
 - Do not auto-trigger skills. Recommend and wait for user confirmation.
 - Do not batch-complete tasks. Mark each done individually.
-- TDD in apply phase: failing test before any code change.
 - Workflow skills (OpenSpec, gstack, superpowers) loaded from `.opencode/skills/`. Builtin skills permitted via standard resolution.
 - Never manually edit `.openspec.yaml`, `proposal.md`, `design.md`, or `tasks.md` directly. These files must only be modified through their designated OpenSpec skills (`/opsx-propose`, `/opsx-apply`, `/opsx-archive`).
 
@@ -148,6 +158,10 @@ Agent: "运行 `/opsx-apply` 开始实现？"
 User: "开始"
 [Agent loads `superpowers:using-superpowers`]
 [1% rule: coding → TDD, bug → debug, completion → verify]
+[Agent loads `superpowers:test-driven-development` for first coding task]
+[Agent follows TDD strictly: writes failing test → sees it fail → writes minimal code → sees test pass → refactors]
+[Agent marks task done]
+[Agent loops: loads `using-superpowers` again for next task → re-checks 1% rule → loads appropriate skill → implements]
 [Agent marks tasks done one by one, never batch]
 ```
 

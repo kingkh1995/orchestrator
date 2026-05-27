@@ -25,6 +25,16 @@ replay_pid*
 
 # custom
 /.idea/
+*.iml
+
+# Gradle build artifacts
+.gradle/
+build/
+
+# IDE files
+.classpath
+.project
+.settings/
 
 # OpenCode runtime data
 .omo/

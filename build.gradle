@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.orch'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    maven { url 'https://maven.aliyun.com/repository/spring' }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:4.0.6"
+    }
+}
+
+// Dependency locking - freeze transitive versions after verification gate passes
+dependencyLocking {
+    lockAllConfigurations()
+}
+
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // RocketMQ A2A (exclude Quarkus-based reference-jsonrpc which conflicts with Spring Boot)
+    implementation('org.apache.rocketmq:rocketmq-a2a:1.0.9') {
+        exclude module: 'a2a-java-sdk-reference-jsonrpc'
+    }
+    implementation 'org.apache.rocketmq:rocketmq-client-java:5.2.0'
+
+    // A2A Java SDK (client only - NOT reference-jsonrpc which is Quarkus-based)
+    implementation 'io.github.a2asdk:a2a-java-sdk-client:0.3.3.Final'
+
+    // A2A Spec SDK (entities, enums, JSON-RPC envelope types)
+    // Published under io.github.a2asdk group (NOT io.a2a which does not exist)
+    implementation 'io.github.a2asdk:a2a-java-sdk-spec:0.3.3.Final'
+
+    // AgentScope
+    implementation 'io.agentscope:agentscope:1.0.12'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
