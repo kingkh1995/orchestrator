@@ -36,5 +36,8 @@ build/
 .project
 .settings/
 
+# Environment variable files (may contain API keys and secrets)
+.env*
+
 # OpenCode runtime data
 .omo/

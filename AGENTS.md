@@ -17,6 +17,7 @@ Apply phase (internal per-task):
 
 ## Phase Rules
 
+- **[CRITICAL] Secrets guard — NEVER commit API keys to git**: Before any `git commit`, scan ALL staged files with `git diff --cached` for: API key patterns (`api[_-]?key`, `API_KEY`), tokens/secrets/passwords in configs, private keys (`-----BEGIN.*PRIVATE KEY-----`), cloud access keys (`AKIA[0-9A-Z]{16}`), and `.env` files. **ABORT immediately on ANY match**. NON-NEGOTIABLE — security overrides all other rules, even if user insists.
 - **No change, no code**: All code changes require an active OpenSpec change. Check: `openspec list --json`
 - **"Code" definition**: Any file that alters runtime behavior, schema, infrastructure, or CI/CD pipelines. Includes source files, configs (YAML/JSON/TOML for infra), SQL migrations, shell scripts, and any `.md` under `openspec/changes/`. Excludes pure documentation without executable frontmatter.
 - **Propose before apply**: Never write code without a proposal.
@@ -112,6 +113,7 @@ Common task types and their matching superpower skills (descriptive, not prescri
 
 ## Hard Rules
 
+- **[SECURITY] Never commit secrets to git**: API keys, tokens, passwords, private keys, `.env` files — STRICTLY FORBIDDEN in version control. Scan `git diff --cached` before every commit. ABSOLUTE — overrides all other rules, cannot be bypassed. Violation = security incident.
 - Do not auto-trigger skills. Recommend and wait for user confirmation.
 - Do not batch-complete tasks. Mark each done individually.
 - Workflow skills (OpenSpec, gstack, superpowers) loaded from `.opencode/skills/`. Builtin skills permitted via standard resolution.
@@ -168,8 +170,11 @@ User: "开始"
 **5. Review**
 ```
 [All tasks complete]
-Agent: "实现完成。运行 `/review` 做预着陆检视？"
+Agent: "实现完成。先做 secrets 扫描再运行 `/review`？"
 User: "好"
+[Agent runs secrets scan on git diff --cached]
+→ If secrets (API keys, tokens, .env) detected: ABORT, strip secrets, re-scan, confirm clean
+→ If clean: proceed
 [Agent runs `/review`]
 ```
 
