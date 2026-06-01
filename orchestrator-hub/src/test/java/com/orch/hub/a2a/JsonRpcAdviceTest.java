@@ -22,9 +22,9 @@ import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GlobalExceptionHandlerTest {
+class JsonRpcAdviceTest {
 
-    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+    private final JsonRpcAdvice handler = new JsonRpcAdvice();
 
     @BeforeEach
     void setUpRequestContext() {
@@ -41,11 +41,11 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldHandleHttpMessageNotReadableAsParseError() {
         var ex = new HttpMessageNotReadableException("Invalid JSON", mockHttpInputMessage());
-        JsonRpcResponse<?> response = handler.handleHttpMessageNotReadable(ex, webRequest());
+        var response = handler.handleHttpMessageNotReadable(ex, webRequest());
 
         assertNotNull(response.error());
         assertEquals(-32700, response.error().code());
-        assertEquals("Parse error", response.error().message());
+        assertEquals("Invalid JSON payload", response.error().message());
         // Parse errors cannot extract id from the body -> null per JSON-RPC spec
         assertNull(response.id());
     }
@@ -53,27 +53,27 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldHandleHttpMediaTypeNotSupportedAsInvalidRequest() {
         var ex = new HttpMediaTypeNotSupportedException("text/plain not supported");
-        JsonRpcResponse<?> response = handler.handleHttpMediaTypeNotSupported(ex, webRequest());
+        var response = handler.handleHttpMediaTypeNotSupported(ex, webRequest());
 
         assertNotNull(response.error());
         assertEquals(-32600, response.error().code());
-        assertEquals("Invalid Request", response.error().message());
+        assertEquals("Request payload validation error", response.error().message());
         // Content-Type rejection happens before body parsing -> null per spec
         assertNull(response.id());
     }
 
     @Test
     void shouldHandleMethodArgumentTypeMismatchAsInvalidParams() throws Exception {
-        Method method = SampleController.class.getMethod("handle", String.class);
-        MethodParameter param = new MethodParameter(method, 0);
+        var method = SampleController.class.getMethod("handle", String.class);
+        var param = new MethodParameter(method, 0);
         var ex = new MethodArgumentTypeMismatchException(
                 "not-an-int", Integer.class, "value", param, new NumberFormatException("bad"));
 
-        JsonRpcResponse<?> response = handler.handleMethodArgumentTypeMismatch(ex, webRequest());
+        var response = handler.handleMethodArgumentTypeMismatch(ex, webRequest());
 
         assertNotNull(response.error());
         assertEquals(-32602, response.error().code());
-        assertEquals("Invalid params", response.error().message());
+        assertEquals("Invalid parameters", response.error().message());
         // Type binding failure happens before controller body executes -> null per spec
         assertNull(response.id());
     }
@@ -81,24 +81,24 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldHandleGenericExceptionAsServerError() {
         var ex = new RuntimeException("Internal failure");
-        JsonRpcResponse<?> response = handler.handleGenericException(ex, webRequest());
+        var response = handler.handleGenericException(ex, webRequest());
 
         assertNotNull(response.error());
-        assertEquals(-32000, response.error().code());
-        assertEquals("Server error", response.error().message());
+        assertEquals(-32603, response.error().code());
+        assertEquals("Internal Error", response.error().message());
         // No cached id -> null
         assertNull(response.id());
     }
 
     @Test
     void shouldEchoCachedIdForGenericException() {
-        // Simulate JsonRpcBodyCacheAdvice having cached the id
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setAttribute(JsonRpcBodyCacheAdvice.ATTR_ID, "req-cached");
+        // Simulate JsonRpcAdvice having cached the id
+        var request = new MockHttpServletRequest();
+        request.setAttribute(JsonRpcAdvice.ATTR_ID, "req-cached");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
         var ex = new RuntimeException("boom");
-        JsonRpcResponse<?> response = handler.handleGenericException(
+        var response = handler.handleGenericException(
                 ex, new ServletWebRequest(request));
 
         assertEquals("req-cached", response.id(),
@@ -108,7 +108,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldSetCorrectJsonRpcVersion() {
         var ex = new HttpMessageNotReadableException("bad json", mockHttpInputMessage());
-        JsonRpcResponse<?> response = handler.handleHttpMessageNotReadable(ex, webRequest());
+        var response = handler.handleHttpMessageNotReadable(ex, webRequest());
 
         assertEquals("2.0", response.jsonrpc());
     }

@@ -1,11 +1,14 @@
 package com.orch.hub.a2a;
 
-import io.a2a.spec.*;
+import io.a2a.spec.AgentCapabilities;
+import io.a2a.spec.AgentCard;
+import io.a2a.spec.AgentProvider;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** A2A agent card discovery endpoint. */
 @RestController
 public class AgentCardController {
 

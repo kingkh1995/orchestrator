@@ -13,7 +13,7 @@ class AgentCardControllerTest {
     @Test
     void shouldReturnAgentCardWithExpectedFields() throws Exception {
         var controller = new AgentCardController();
-        AgentCard card = controller.getAgentCard();
+        var card = controller.getAgentCard();
 
         assertEquals("OrchestratorHub", card.name());
         assertEquals("A2A Multi-Agent Orchestration Hub", card.description());
@@ -24,8 +24,8 @@ class AgentCardControllerTest {
     @Test
     void shouldSerializeAgentCardToJsonRoundTrip() throws Exception {
         var controller = new AgentCardController();
-        String json = mapper.writeValueAsString(controller.getAgentCard());
-        AgentCard roundTripped = mapper.readValue(json, AgentCard.class);
+        var json = mapper.writeValueAsString(controller.getAgentCard());
+        var roundTripped = mapper.readValue(json, AgentCard.class);
 
         assertEquals("OrchestratorHub", roundTripped.name());
         assertEquals("A2A Multi-Agent Orchestration Hub", roundTripped.description());

@@ -1,4 +1,9 @@
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    compileOnly libs.jspecify
+
+
     // Spring Boot
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.actuator

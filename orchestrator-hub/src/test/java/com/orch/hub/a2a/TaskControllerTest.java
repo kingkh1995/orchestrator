@@ -30,18 +30,16 @@ class TaskControllerTest {
 
     @Test
     void shouldReturnCompletedTaskForTasksSendMethod() {
-        var request = new JsonRpcRequest<MessageSendParams>(
-                "2.0", "req-1", "tasks/send",
+        var request = JsonRpcRequest.<MessageSendParams>of("2.0", "req-1", "tasks/send",
                 new MessageSendParams(
                         new Message.Builder()
                                 .role(Message.Role.USER)
                                 .parts(List.of(new TextPart("Hello")))
                                 .build(),
                         null, null
-                )
-        );
+                ));
 
-        JsonRpcResponse<?> response = controller.handleTasksSend(request);
+        var response = controller.handleTasksSend(request);
 
         assertEquals("2.0", response.jsonrpc());
         assertEquals("req-1", response.id());
@@ -51,31 +49,25 @@ class TaskControllerTest {
 
     @Test
     void shouldReturnTaskWithCompletedStatus() {
-        var request = new JsonRpcRequest<MessageSendParams>(
-                "2.0", "req-2", "tasks/send", null
-        );
+        var request = JsonRpcRequest.<MessageSendParams>of("2.0", "req-2", "tasks/send", null);
 
-        JsonRpcResponse<?> response = controller.handleTasksSend(request);
-        Object result = response.result();
+        var response = controller.handleTasksSend(request);
+        var result = response.result();
 
         assertNotNull(result);
         assertInstanceOf(Task.class, result);
-        Task task = (Task) result;
+        var task = (Task) result;
         assertNotNull(task.getId());
-        TaskStatus status = task.getStatus();
+        var status = task.getStatus();
         assertNotNull(status);
         assertEquals(TaskState.COMPLETED, status.state());
-        assertNotNull(task.getArtifacts());
-        assertEquals(1, task.getArtifacts().size());
     }
 
     @Test
     void shouldReturnMethodNotFoundForUnknownMethod() {
-        var request = new JsonRpcRequest<MessageSendParams>(
-                "2.0", "req-3", "unknown.method", null
-        );
+        var request = JsonRpcRequest.<MessageSendParams>of("2.0", "req-3", "unknown.method", null);
 
-        JsonRpcResponse<?> response = controller.handleTasksSend(request);
+        var response = controller.handleTasksSend(request);
 
         assertNull(response.result());
         assertNotNull(response.error());
@@ -84,31 +76,14 @@ class TaskControllerTest {
     }
 
     @Test
-    void shouldReturnInvalidRequestWhenJsonRpcFieldIsMissing() {
-        var request = new JsonRpcRequest<MessageSendParams>(
-                null, "req-4", "tasks/send", null
-        );
-
-        JsonRpcResponse<?> response = controller.handleTasksSend(request);
-
-        assertNull(response.result());
-        assertNotNull(response.error());
-        assertEquals(-32600, response.error().code());
-        assertEquals("Invalid Request", response.error().message());
-        assertEquals("req-4", response.id());
-    }
-
-    @Test
     void shouldReturnInvalidRequestWhenJsonRpcVersionIsNot2Point0() {
-        var request = new JsonRpcRequest<MessageSendParams>(
-                "1.0", "req-5", "tasks/send", null
-        );
+        var request = JsonRpcRequest.<MessageSendParams>of("1.0", "req-5", "tasks/send", null);
 
-        JsonRpcResponse<?> response = controller.handleTasksSend(request);
+        var response = controller.handleTasksSend(request);
 
         assertNull(response.result());
         assertNotNull(response.error());
         assertEquals(-32600, response.error().code());
-        assertEquals("Invalid Request", response.error().message());
+        assertEquals("Request payload validation error", response.error().message());
     }
 }

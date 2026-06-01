@@ -3,7 +3,14 @@ package com.orch.hub.a2a;
 import com.orch.hub.a2a.rpc.JsonRpcError;
 import com.orch.hub.a2a.rpc.JsonRpcRequest;
 import com.orch.hub.a2a.rpc.JsonRpcResponse;
-import io.a2a.spec.*;
+import io.a2a.spec.Artifact;
+import io.a2a.spec.InvalidRequestError;
+import io.a2a.spec.MessageSendParams;
+import io.a2a.spec.MethodNotFoundError;
+import io.a2a.spec.Task;
+import io.a2a.spec.TaskState;
+import io.a2a.spec.TaskStatus;
+import io.a2a.spec.TextPart;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,23 +18,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+/** A2A tasks/send endpoint. */
 @RestController
 public class TaskController {
 
-    @PostMapping(value = "/tasks/send", consumes = "application/json")
+    @PostMapping("/tasks/send")
     public JsonRpcResponse<?> handleTasksSend(@RequestBody JsonRpcRequest<MessageSendParams> request) {
+        /** @see io.a2a.spec.InvalidRequestError */
         if (!"2.0".equals(request.jsonrpc())) {
-            return new JsonRpcResponse<>(
-                    "2.0", request.id(), null,
-                    new JsonRpcError(-32600, "Invalid Request", null)
-            );
+            return JsonRpcResponse.error("2.0", request.id(), JsonRpcError.of(InvalidRequestError.DEFAULT_CODE, "Request payload validation error", null));
         }
 
+        /** @see io.a2a.spec.MethodNotFoundError */
         if (!"tasks/send".equals(request.method())) {
-            return new JsonRpcResponse<>(
-                    "2.0", request.id(), null,
-                    new JsonRpcError(-32601, "Method not found", null)
-            );
+            return JsonRpcResponse.error("2.0", request.id(), JsonRpcError.of(MethodNotFoundError.DEFAULT_CODE, "Method not found", null));
         }
 
         // Build mock Task with COMPLETED status
@@ -37,13 +41,13 @@ public class TaskController {
                 .parts(new TextPart("Mock response from OrchestratorHub"))
                 .build();
 
-        Task task = new Task.Builder()
+        var task = new Task.Builder()
                 .id(UUID.randomUUID().toString())
                 .contextId("ctx-" + System.currentTimeMillis())
                 .status(new TaskStatus(TaskState.COMPLETED))
                 .artifacts(List.of(artifact))
                 .build();
 
-        return new JsonRpcResponse<>("2.0", request.id(), task, null);
+        return JsonRpcResponse.result("2.0", request.id(), task);
     }
 }

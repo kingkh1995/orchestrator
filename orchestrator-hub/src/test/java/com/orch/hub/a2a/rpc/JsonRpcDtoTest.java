@@ -21,7 +21,7 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldCreateJsonRpcRequestWithAllFields() {
-        var request = new JsonRpcRequest<String>("2.0", "req-1", "tasks/send", "hello");
+        var request = JsonRpcRequest.of("2.0", "req-1", "tasks/send", "hello");
 
         assertEquals("2.0", request.jsonrpc());
         assertEquals("req-1", request.id());
@@ -31,8 +31,8 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldSerializeJsonRpcRequestToJson() throws Exception {
-        var request = new JsonRpcRequest<String>("2.0", "1", "tasks/send", "test-params");
-        String json = mapper.writeValueAsString(request);
+        var request = JsonRpcRequest.of("2.0", "1", "tasks/send", "test-params");
+        var json = mapper.writeValueAsString(request);
 
         assertTrue(json.contains("\"jsonrpc\":\"2.0\""));
         assertTrue(json.contains("\"id\":\"1\""));
@@ -42,7 +42,7 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldDeserializeJsonRpcRequestFromJson() throws Exception {
-        String json = """
+        var json = """
                 {"jsonrpc":"2.0","id":"2","method":"tasks/send","params":"hello"}
                 """;
         @SuppressWarnings("unchecked")
@@ -56,7 +56,7 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldHandleNullParamsInJsonRpcRequest() {
-        var request = new JsonRpcRequest<String>("2.0", "3", "tasks/cancel", null);
+        var request = JsonRpcRequest.of("2.0", "3", "tasks/cancel", null);
 
         assertEquals("2.0", request.jsonrpc());
         assertEquals("3", request.id());
@@ -68,7 +68,7 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldCreateJsonRpcResponseWithResult() {
-        var response = new JsonRpcResponse<String>("2.0", "res-1", "success", null);
+        var response = JsonRpcResponse.result("2.0", "res-1", "success");
 
         assertEquals("2.0", response.jsonrpc());
         assertEquals("res-1", response.id());
@@ -78,8 +78,8 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldCreateJsonRpcResponseWithError() {
-        var error = new JsonRpcError(-32700, "Parse error", null);
-        var response = new JsonRpcResponse<String>("2.0", "res-2", null, error);
+        var error = JsonRpcError.of(-32700, "Parse error", null);
+        var response = JsonRpcResponse.error("2.0", "res-2", error);
 
         assertEquals("2.0", response.jsonrpc());
         assertEquals("res-2", response.id());
@@ -91,8 +91,8 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldSerializeJsonRpcResponseWithResult() throws Exception {
-        var response = new JsonRpcResponse<String>("2.0", "1", "done", null);
-        String json = mapper.writeValueAsString(response);
+        var response = JsonRpcResponse.result("2.0", "1", "done");
+        var json = mapper.writeValueAsString(response);
 
         assertTrue(json.contains("\"jsonrpc\":\"2.0\""));
         assertTrue(json.contains("\"id\":\"1\""));
@@ -102,9 +102,9 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldSerializeJsonRpcResponseWithError() throws Exception {
-        var error = new JsonRpcError(-32601, "Method not found", null);
-        var response = new JsonRpcResponse<String>("2.0", "2", null, error);
-        String json = mapper.writeValueAsString(response);
+        var error = JsonRpcError.of(-32601, "Method not found", null);
+        var response = JsonRpcResponse.error("2.0", "2", error);
+        var json = mapper.writeValueAsString(response);
 
         assertTrue(json.contains("\"jsonrpc\":\"2.0\""));
         assertTrue(json.contains("\"id\":\"2\""));
@@ -114,7 +114,7 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldDeserializeJsonRpcResponseWithResult() throws Exception {
-        String json = """
+        var json = """
                 {"jsonrpc":"2.0","id":"3","result":"completed","error":null}
                 """;
         @SuppressWarnings("unchecked")
@@ -128,7 +128,7 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldDeserializeJsonRpcResponseWithError() throws Exception {
-        String json = """
+        var json = """
                 {"jsonrpc":"2.0","id":"4","result":null,"error":{"code":-32000,"message":"Server error","data":null}}
                 """;
         @SuppressWarnings("unchecked")
@@ -146,7 +146,7 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldCreateJsonRpcErrorWithAllFields() {
-        var error = new JsonRpcError(-32601, "Method not found", Map.of("method", "unknown"));
+        var error = JsonRpcError.of(-32601, "Method not found", Map.of("method", "unknown"));
 
         assertEquals(-32601, error.code());
         assertEquals("Method not found", error.message());
@@ -155,8 +155,8 @@ class JsonRpcDtoTest {
 
     @Test
     void shouldSerializeJsonRpcError() throws Exception {
-        var error = new JsonRpcError(-32700, "Parse error", null);
-        String json = mapper.writeValueAsString(error);
+        var error = JsonRpcError.of(-32700, "Parse error", null);
+        var json = mapper.writeValueAsString(error);
 
         assertTrue(json.contains("\"code\":-32700"));
         assertTrue(json.contains("\"message\":\"Parse error\""));
