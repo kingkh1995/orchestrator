@@ -109,7 +109,7 @@ public interface OrchestrationLLM {
 **Alternatives considered**: No conditional (rejected — bootRun crashes), separate profile (rejected — conditional is simpler)
 
 ### Decision 12: Dependency verification gate (Task 0)
-**Rationale**: Spring Boot 4.0.6, Gradle 9.5.0, agentscope 1.0.12, and rocketmq-a2a 1.0.9 are all very recent releases. Their transitive compatibility is unverified. Task 0 validates `./gradlew dependencies` against a minimal build file and checks a2a-java-sdk entity Jackson serialization before any code is written, preventing late-discovery of broken dependencies.
+**Rationale**: Spring Boot 4.0.6, Gradle 9.5.1, agentscope 1.0.12, and rocketmq-a2a 1.0.9 are all very recent releases. Their transitive compatibility is unverified. Task 0 validates `./gradlew dependencies` against a minimal build file and checks a2a-java-sdk entity Jackson serialization before any code is written, preventing late-discovery of broken dependencies.
 
 **Hard gate**: All subsequent tasks are blocked until Task 0 passes. A `gradle.lockfile` is generated after the gate passes to freeze transitive versions, preventing silent dependency drift during implementation.
 

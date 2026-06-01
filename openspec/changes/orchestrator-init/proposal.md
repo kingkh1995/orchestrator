@@ -4,7 +4,7 @@ The Orchestrator project currently exists only as a comprehensive design documen
 
 ## What Changes
 
-- **Bootstrap Gradle multi-module project**: Create `orchestrator-parent` with Gradle 9.5.0 (Groovy DSL) and Gradle Wrapper, using Tencent mirror for distribution and Aliyun Maven Central for dependencies
+- **Bootstrap Gradle multi-module project**: Create `orchestrator-parent` with Gradle 9.5.1 (Groovy DSL) and Gradle Wrapper, using Tencent mirror for distribution and Aliyun Maven Central for dependencies
 - **Initialize Hub Server module**: Spring Boot 4.0.6 + JDK 25 (compiled to Java 17 bytecode compatibility)
 - **Introduce core dependencies**: rocketmq-a2a 1.0.9, a2a-java-sdk 0.3.3.Final, agentscope-java 1.0.12
 - **Define A2A protocol endpoints**: Mock `AgentCard` (GET `/.well-known/agent.json`) and `tasks/send` (POST `/tasks/send`) returning static COMPLETED responses

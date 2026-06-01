@@ -11,7 +11,7 @@
 ## 1. Project Bootstrap
 
 - [x] 1.1 Create Gradle multi-module project structure (`orchestrator-parent`, `orchestrator-hub`)
-- [x] 1.2 Configure Gradle Wrapper with Tencent mirror (`https://mirrors.cloud.tencent.com/gradle/gradle-9.5.0-bin.zip`)
+- [x] 1.2 Configure Gradle Wrapper with Tencent mirror (`https://mirrors.cloud.tencent.com/gradle/gradle-9.5.1-bin.zip`)
 - [x] 1.3 Configure Aliyun Maven Central repository in root `build.gradle`
 - [x] 1.4 Import Gradle version catalog (`libs.versions.toml`) for centralized version management
 - [x] 1.5 Set Java source/target compatibility to 17 with JDK 25 runtime
@@ -32,16 +32,16 @@
 
 ## 3. A2A Protocol Endpoints (MVP)
 
-- [ ] 3.1 Create `JsonRpcRequest<T>` and `JsonRpcResponse<T>` generic records in `com.orch.hub.a2a.rpc` package. Include `jsonrpc` field, `id` field, `method` (request only), `params` (request only), `result` (response only), `error` (response only, with `code`, `message`, `data`)
-- [ ] 3.2 Define A2A entity classes (reuse a2a-java-sdk entity classes directly) in `com.orch.hub.a2a` package
-- [ ] 3.3 Create `AgentCardController` with GET `/.well-known/agent.json` returning static mock AgentCard
-- [ ] 3.4 Create `TaskController` with POST `/tasks/send` — annotated with `consumes = "application/json"`, accepts `@RequestBody JsonRpcRequest<TaskInput>`
-- [ ] 3.5 Implement mock `tasks/send` response returning `JsonRpcResponse<Task>` with status `COMPLETED` and a mock `Artifact`. Parse `method` field and return JSON-RPC error `-32601` (Method not found) for unknown methods.
-- [ ] 3.6 Create `@RestControllerAdvice` global exception handler in `com.orch.hub.a2a`:
+- [x] 3.1 Create `JsonRpcRequest<T>` and `JsonRpcResponse<T>` generic records in `com.orch.hub.a2a.rpc` package. Include `jsonrpc` field, `id` field, `method` (request only), `params` (request only), `result` (response only), `error` (response only, with `code`, `message`, `data`)
+- [x] 3.2 Define A2A entity classes (reuse a2a-java-sdk entity classes directly) in `com.orch.hub.a2a` package
+- [x] 3.3 Create `AgentCardController` with GET `/.well-known/agent.json` returning static mock AgentCard
+- [x] 3.4 Create `TaskController` with POST `/tasks/send` — annotated with `consumes = "application/json"`, accepts `@RequestBody JsonRpcRequest<TaskInput>`
+- [x] 3.5 Implement mock `tasks/send` response returning `JsonRpcResponse<Task>` with status `COMPLETED` and a mock `Artifact`. Parse `method` field and return JSON-RPC error `-32601` (Method not found) for unknown methods.
+- [x] 3.6 Create `@RestControllerAdvice` global exception handler in `com.orch.hub.a2a`:
   - `HttpMessageNotReadableException` → JSON-RPC error `-32700` (Parse error)
   - `HttpMediaTypeNotSupportedException` → JSON-RPC error `-32600` (Invalid Request)
   - Generic `Exception` → JSON-RPC error `-32000` (Server error)
-- [ ] 3.7 Create `OrchestratorHubApplication` Spring Boot main class
+- [x] 3.7 Create `OrchestratorHubApplication` Spring Boot main class
 
 ## 4. ReAct Orchestration & LLM Abstraction
 

@@ -2,6 +2,8 @@
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
+# Dependency lock files are auto-regenerated and not source-controlled
+**/gradle.lockfile
 
 # --- IntelliJ IDEA ---
 *.iml
