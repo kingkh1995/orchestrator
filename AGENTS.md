@@ -254,3 +254,4 @@ User: "可以"
 ## Project Info
 
 Product documentation, architecture, and design details are in `README.md`. Read it for project context when needed.
+Code style violations and anti-patterns to avoid are in `CODING_CONVENTIONS.md`. Check it before writing new code.
