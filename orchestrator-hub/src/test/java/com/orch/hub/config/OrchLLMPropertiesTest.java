@@ -34,10 +34,4 @@ class OrchLLMPropertiesTest {
         assertEquals(3, properties.getMaxRetries(), "max-retries should be bound from configuration");
     }
 
-    @Test
-    void shouldHaveDefaultValues() {
-        OrchLLMProperties defaultProps = new OrchLLMProperties();
-        assertEquals(30, defaultProps.getTimeout().getSeconds(), "default timeout should be 30 seconds");
-        assertEquals(3, defaultProps.getMaxRetries(), "default max-retries should be 3");
-    }
 }

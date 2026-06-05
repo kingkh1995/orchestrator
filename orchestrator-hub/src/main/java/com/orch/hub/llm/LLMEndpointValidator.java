@@ -2,8 +2,8 @@ package com.orch.hub.llm;
 
 import com.orch.hub.config.OrchLLMProperties;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 /**
- * Startup-time reachability probe for the OpenCode Zen endpoint.
+ * Startup-time reachability probe for the configured LLM endpoint.
  *
  * <p>Runs once after bean construction. A missing API key is logged as an
  * error; a network probe is attempted when the key is present. The probe
@@ -23,50 +23,59 @@ import java.time.Duration;
  *
  * <p>The probe-time {@link HttpClient} is a one-shot. It holds no
  * long-lived resources beyond internal daemon threads that die with
- * the JVM, so explicit shutdown is unnecessary on Java 17 (which does
+ * the JVM, so explicit shutdown is unnecessary on Java 17+ (which does
  * not yet expose {@code HttpClient#close()}).
  */
 @Slf4j
 @Component
-public class OpenCodeZenStartupValidator {
+public class LLMEndpointValidator {
 
-    private static final URI PROBE_URI = URI.create(
-            LLMConfig.OPENCODE_ZEN_BASE_URL + LLMConfig.OPENCODE_ZEN_CHAT_PATH);
+    private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
-    private final OrchLLMProperties properties;
+    private final URI probeUri;
+    private final String apiKey;
     private final HttpSender sender;
 
     @Autowired
-    public OpenCodeZenStartupValidator(OrchLLMProperties properties) {
-        this(properties, defaultSender());
+    public LLMEndpointValidator(OrchLLMProperties properties) {
+        this(buildProbeUri(properties.getBaseUrl(), properties.getEndpointPath()),
+                properties.getApiKey(),
+                defaultSender());
     }
 
-    OpenCodeZenStartupValidator(OrchLLMProperties properties, HttpSender sender) {
-        this.properties = properties;
+    /** Test-only constructor with all dependencies injected directly. */
+    LLMEndpointValidator(URI probeUri, String apiKey, HttpSender sender) {
+        this.probeUri = probeUri;
+        this.apiKey = apiKey;
         this.sender = sender;
     }
 
+    private static URI buildProbeUri(String baseUrl, String endpointPath) {
+        if (baseUrl == null) {
+            throw new IllegalArgumentException("orch.llm.base-url must be configured");
+        }
+        String path = endpointPath != null ? endpointPath : "";
+        return URI.create(baseUrl + path);
+    }
     @PostConstruct
-    public void validate() {
+    void validate() {
         boolean reachable = probe();
         if (reachable) {
-            log.info("OpenCode Zen endpoint reachable: {}", PROBE_URI);
+            log.info("LLM endpoint reachable: {}", probeUri);
         } else {
-            log.warn("OpenCode Zen endpoint NOT reachable — LLM calls will fail at runtime. URI={}",
-                    PROBE_URI);
+            log.warn("LLM endpoint NOT reachable — LLM calls will fail at runtime. URI={}", probeUri);
         }
     }
 
     boolean probe() {
-        String apiKey = properties.getApiKey();
         if (apiKey == null || apiKey.isBlank()) {
-            log.error("OPENCODE_API_KEY is not set. LLM calls will fail at runtime.");
+            log.error("LLM API key is not set. LLM calls will fail at runtime.");
             return false;
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(PROBE_URI)
-                .timeout(Duration.ofSeconds(5))
+                .uri(probeUri)
+                .timeout(TIMEOUT)
                 .GET()
                 .header("Authorization", "Bearer " + apiKey)
                 .build();
@@ -80,21 +89,21 @@ public class OpenCodeZenStartupValidator {
             if (status >= 200 && status < 500 && status != 404) {
                 return true;
             }
-            log.warn("OpenCode Zen probe returned status {} — endpoint not ready", status);
+            log.warn("LLM endpoint probe returned status {} — endpoint not ready", status);
             return false;
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            log.warn("OpenCode Zen probe interrupted");
+            log.warn("LLM endpoint probe interrupted");
             return false;
         } catch (IOException | RuntimeException e) {
-            log.warn("OpenCode Zen probe failed: {}", e.getMessage());
+            log.warn("LLM endpoint probe failed: {}", e.getMessage());
             return false;
         }
     }
 
     private static HttpSender defaultSender() {
         HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3))
+                .connectTimeout(TIMEOUT)
                 .build();
         return client::send;
     }
@@ -102,7 +111,7 @@ public class OpenCodeZenStartupValidator {
     /** SAM mirroring {@link HttpClient#send} so checked exceptions are first-class. */
     @FunctionalInterface
     interface HttpSender {
-        HttpResponse<String> send(HttpRequest request, HttpResponse.BodyHandler<String> handler)
+        <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> handler)
                 throws IOException, InterruptedException;
     }
 }

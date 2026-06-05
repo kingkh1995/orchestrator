@@ -1,19 +1,36 @@
 package com.orch.hub.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-@Component
+/**
+ * LLM provider configuration.
+ *
+ * <p>All values come from {@code application.yml} (or environment/nested
+ * sources). No Java-level defaults — missing required fields fail fast
+ * during Spring Boot's property binding or at bean construction time.
+ */
 @ConfigurationProperties(prefix = "orch.llm")
 public class OrchLLMProperties {
 
-    private String provider = "opencode-zen";
-    private String model = "deepseek-v4-flash-free";
+    /** Provider name (informational — not used for dispatch). */
+    private String provider;
+
+    private String model;
     private String apiKey;
-    private Duration timeout = Duration.ofSeconds(30);
-    private int maxRetries = 3;
+
+    /** Base URL of the LLM API (e.g. "https://opencode.ai/zen/v1"). */
+    private String baseUrl;
+
+    /** API endpoint path (e.g. "/chat/completions"). */
+    private String endpointPath;
+
+    /** Request timeout. When null, agentscope's ExecutionConfig default applies. */
+    private Duration timeout;
+
+    /** Maximum retry count. null = use agentscope default; 0 means no retries. */
+    private Integer maxRetries;
 
     public String getProvider() {
         return provider;
@@ -39,6 +56,22 @@ public class OrchLLMProperties {
         this.apiKey = apiKey;
     }
 
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
+    public String getEndpointPath() {
+        return endpointPath;
+    }
+
+    public void setEndpointPath(String endpointPath) {
+        this.endpointPath = endpointPath;
+    }
+
     public Duration getTimeout() {
         return timeout;
     }
@@ -47,11 +80,10 @@ public class OrchLLMProperties {
         this.timeout = timeout;
     }
 
-    public int getMaxRetries() {
+    public Integer getMaxRetries() {
         return maxRetries;
     }
-
-    public void setMaxRetries(int maxRetries) {
+    public void setMaxRetries(Integer maxRetries) {
         this.maxRetries = maxRetries;
     }
 }

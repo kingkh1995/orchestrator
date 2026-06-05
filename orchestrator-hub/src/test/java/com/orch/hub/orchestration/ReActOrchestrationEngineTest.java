@@ -1,6 +1,5 @@
 package com.orch.hub.orchestration;
 
-import com.orch.hub.config.OrchLLMProperties;
 import com.orch.hub.session.SessionContext;
 import io.agentscope.core.agent.Agent;
 import io.agentscope.core.message.Msg;
@@ -87,24 +86,6 @@ class ReActOrchestrationEngineTest {
                 "User message should carry the session id, got: " + text);
         assertTrue(text.contains("task-1"),
                 "User message should carry the session tasks, got: " + text);
-    }
-
-    @Test
-    void shouldUseTimeoutFromPropertiesConstructor() {
-        Agent agent = mock(Agent.class);
-        when(agent.call(anyList())).thenReturn(Mono.just(
-                Msg.builder()
-                        .role(MsgRole.ASSISTANT)
-                        .content(TextBlock.builder().text("ok").build())
-                        .build()));
-
-        OrchLLMProperties props = new OrchLLMProperties();
-        props.setTimeout(Duration.ofSeconds(45));
-        ReActOrchestrationEngine engine = new ReActOrchestrationEngine(agent, props);
-
-        // No exception, no hang — the call completes within the configured timeout.
-        String result = engine.executePlan(new SessionContext("s"));
-        assertEquals("ok", result);
     }
 
     @Test

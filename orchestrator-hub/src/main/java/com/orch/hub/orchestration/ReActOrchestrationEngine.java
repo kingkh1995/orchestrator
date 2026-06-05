@@ -1,6 +1,5 @@
 package com.orch.hub.orchestration;
 
-import com.orch.hub.config.OrchLLMProperties;
 import com.orch.hub.session.SessionContext;
 import io.agentscope.core.agent.Agent;
 import io.agentscope.core.message.Msg;
@@ -17,8 +16,10 @@ import java.util.List;
  * (wired in {@code OrchestrationEngineConfig#reActAgent}), so execution
  * is driven by the Reason + Act loop rather than a static mock plan.
  *
- * <p>The call timeout is sourced from {@link OrchLLMProperties#getTimeout()}
- * so it stays consistent with the LLM provider's per-call budget.
+ * <p>The call timeout is passed explicitly at construction time (typically
+ * from {@link OrchestrationEngineConfig} which reads the value from
+ * application configuration), keeping the engine free of redundant
+ * property-object dependencies.</p>
  */
 @Slf4j
 public class ReActOrchestrationEngine implements OrchestrationEngine {
@@ -28,10 +29,6 @@ public class ReActOrchestrationEngine implements OrchestrationEngine {
 
     public ReActOrchestrationEngine(Agent agent) {
         this(agent, Duration.ofSeconds(60));
-    }
-
-    public ReActOrchestrationEngine(Agent agent, OrchLLMProperties properties) {
-        this(agent, Duration.ofSeconds(properties.getTimeout().toSeconds()));
     }
 
     public ReActOrchestrationEngine(Agent agent, Duration callTimeout) {

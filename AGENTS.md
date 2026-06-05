@@ -59,6 +59,7 @@ Skills are loaded from `.omp/skills/<skill-name>/SKILL.md`. When you invoke a sk
 - **Propose before apply**: Never write code without a proposal.
 - **Autoplan before apply**: Design must be reviewed before implementation.
 - **Review before commit**: Run `/review` before any commit.
+- **LRU 规范**: 每次 review 发现违反 `CODING_CONVENTIONS.md` 某条规则，将那条规则移到**所在分类的最顶部**。长期未触发的规则自然沉底，可定期清理。
 - **Explore = read-only**: `/opsx-explore` never writes code.
 - **Apply gate is mandatory**: Before writing any code, the apply gate (see [Workflow](#workflow)) must be passed. The gate loads `skill("superpowers-using-superpowers")`, which triggers the 1% rule → matching superpower skill.
 

@@ -1,6 +1,5 @@
 package com.orch.hub.llm;
 
-import com.orch.hub.config.OrchLLMProperties;
 import com.orch.hub.session.SessionContext;
 import io.agentscope.core.message.ContentBlock;
 import io.agentscope.core.message.TextBlock;
@@ -25,10 +24,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link OpenCodeZenProvider} — verifies delegation to
- * AgentScope-Java's {@link Model} abstraction and the JSON-array parser.
+ * Unit tests for {@link DefaultLLMProvider} — verifies delegation to
+ * AgentScope-Java's {@link Model} and the XML step parser.
  */
-class OpenCodeZenProviderTest {
+class DefaultLLMProviderTest {
 
     private static ContentBlock textBlock(String text) {
         return TextBlock.builder().text(text).build();
@@ -49,7 +48,7 @@ class OpenCodeZenProviderTest {
         Model model = mock(Model.class);
         when(model.stream(anyList(), any(), any())).thenReturn(Flux.empty());
 
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
         provider.generatePlan(new SessionContext("s1"));
 
         verify(model, times(1)).stream(anyList(), any(), any());
@@ -58,46 +57,39 @@ class OpenCodeZenProviderTest {
     @Test
     void shouldExposeConfiguredModelName() {
         Model model = mock(Model.class);
-        OrchLLMProperties props = new OrchLLMProperties();
-        props.setModel("deepseek-v4-flash-free");
+        when(model.getModelName()).thenReturn("deepseek-v4-flash-free");
 
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, props);
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
 
         assertEquals("deepseek-v4-flash-free", provider.getModelName());
     }
 
     @Test
-    void shouldParseValidJsonArrayIntoSteps() {
+    void shouldParseValidXmlSteps() {
         Model model = mock(Model.class);
+        String xml = """
+                <steps>
+                  <step>query user profile</step>
+                  <step>validate permissions</step>
+                  <step>execute transfer</step>
+                </steps>""";
         when(model.stream(anyList(), any(), any()))
-                .thenReturn(Flux.just(response(textBlock("[\"step-a\",\"step-b\",\"step-c\"]"))));
+                .thenReturn(Flux.just(response(textBlock(xml))));
 
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
         OrchestrationPlan plan = provider.generatePlan(new SessionContext("s1"));
 
-        assertEquals(List.of("step-a", "step-b", "step-c"), plan.steps());
+        assertEquals(List.of("query user profile", "validate permissions", "execute transfer"),
+                plan.steps());
     }
 
     @Test
-    void shouldParseJsonArraySurroundedByProse() {
+    void shouldHandleEmptyStepsElement() {
         Model model = mock(Model.class);
         when(model.stream(anyList(), any(), any()))
-                .thenReturn(Flux.just(response(textBlock(
-                        "Here is the plan:\n[\"first\", \"second\"]\nDone."))));
+                .thenReturn(Flux.just(response(textBlock("<steps></steps>"))));
 
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
-        OrchestrationPlan plan = provider.generatePlan(new SessionContext("s1"));
-
-        assertEquals(List.of("first", "second"), plan.steps());
-    }
-
-    @Test
-    void shouldHandleEmptyArray() {
-        Model model = mock(Model.class);
-        when(model.stream(anyList(), any(), any()))
-                .thenReturn(Flux.just(response(textBlock("[]"))));
-
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
         OrchestrationPlan plan = provider.generatePlan(new SessionContext("s1"));
 
         assertNotNull(plan.steps());
@@ -110,7 +102,7 @@ class OpenCodeZenProviderTest {
         when(model.stream(anyList(), any(), any()))
                 .thenReturn(Flux.just(response(textBlock(""))));
 
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
         OrchestrationPlan plan = provider.generatePlan(new SessionContext("s1"));
 
         assertNotNull(plan.steps());
@@ -118,12 +110,12 @@ class OpenCodeZenProviderTest {
     }
 
     @Test
-    void shouldReturnEmptyStepsWhenResponseIsNotJson() {
+    void shouldReturnEmptyStepsWhenResponseIsNotXml() {
         Model model = mock(Model.class);
         when(model.stream(anyList(), any(), any()))
-                .thenReturn(Flux.just(response(textBlock("no json here at all"))));
+                .thenReturn(Flux.just(response(textBlock("no xml here at all"))));
 
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
         OrchestrationPlan plan = provider.generatePlan(new SessionContext("s1"));
 
         assertNotNull(plan.steps());
@@ -136,7 +128,7 @@ class OpenCodeZenProviderTest {
         when(model.stream(anyList(), any(), any()))
                 .thenReturn(Flux.just(response((ContentBlock) null)));
 
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
         OrchestrationPlan plan = provider.generatePlan(new SessionContext("s1"));
 
         assertNotNull(plan);
@@ -144,34 +136,11 @@ class OpenCodeZenProviderTest {
     }
 
     @Test
-    void shouldApplyModelNameAndApiKeyToGenerateOptions() {
+    void shouldPassStreamFalseInGenerateOptions() {
         Model model = mock(Model.class);
         when(model.stream(anyList(), any(), any())).thenReturn(Flux.empty());
 
-        OrchLLMProperties props = new OrchLLMProperties();
-        props.setModel("custom-model");
-        props.setApiKey("custom-key");
-        props.setTimeout(java.time.Duration.ofSeconds(45));
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, props);
-        provider.generatePlan(new SessionContext("s1"));
-
-        org.mockito.ArgumentCaptor<GenerateOptions> captor =
-                org.mockito.ArgumentCaptor.forClass(GenerateOptions.class);
-        verify(model).stream(anyList(), any(), captor.capture());
-        GenerateOptions options = captor.getValue();
-
-        assertEquals("custom-model", options.getModelName(),
-                "GenerateOptions.modelName must come from properties");
-        assertEquals("custom-key", options.getApiKey(),
-                "GenerateOptions.apiKey must come from properties");
-    }
-
-    @Test
-    void shouldStreamFalseByDefaultForPlanGeneration() {
-        Model model = mock(Model.class);
-        when(model.stream(anyList(), any(), any())).thenReturn(Flux.empty());
-
-        OpenCodeZenProvider provider = new OpenCodeZenProvider(model, new OrchLLMProperties());
+        DefaultLLMProvider provider = new DefaultLLMProvider(model);
         provider.generatePlan(new SessionContext("s1"));
 
         org.mockito.ArgumentCaptor<GenerateOptions> captor =
@@ -180,6 +149,6 @@ class OpenCodeZenProviderTest {
         GenerateOptions options = captor.getValue();
 
         assertEquals(Boolean.FALSE, options.getStream(),
-                "Plan generation should not stream — it needs the full response");
+                "Plan generation should not stream");
     }
 }

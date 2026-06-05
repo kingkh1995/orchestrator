@@ -38,7 +38,7 @@ class LLMConnectivitySmokeTest {
     @Test
     void shouldHaveLLMBeanRegistered() {
         assertNotNull(orchestrationLLM, "OrchestrationLLM bean should be registered");
-        assertTrue(orchestrationLLM instanceof OpenCodeZenProvider,
-                "LLM bean should be OpenCodeZenProvider");
+        assertTrue(orchestrationLLM instanceof DefaultLLMProvider,
+                "LLM bean should be DefaultLLMProvider");
     }
 }

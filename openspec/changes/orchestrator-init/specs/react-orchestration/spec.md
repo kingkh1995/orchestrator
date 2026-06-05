@@ -5,18 +5,18 @@ The system SHALL define a single `OrchestrationEngine` interface that encapsulat
 
 #### Scenario: Engine instantiation
 - **WHEN** the Spring context initializes
-- **THEN** an `OrchestrationEngine` bean MUST be registered
+- **THEN** an `OrchestrationEngine` bean MUST be registered (unconditional, no conditional property needed)
 
-### Requirement: OrchestrationEngine generates mock DAG in MVP
-In MVP, the OrchestrationEngine SHALL accept a `SessionContext` and return a static mock DAG (Directed Acyclic Graph) containing a single node representing direct completion.
+### Requirement: OrchestrationEngine delegates to ReActAgent
+The `ReActOrchestrationEngine` SHALL delegate execution to AgentScope-Java's `ReActAgent` (the only engine implementation). The engine does not depend on `OrchLLMProperties` — timeout is injected as `Duration` at construction.
 
-#### Scenario: Engine generates mock plan
+#### Scenario: Engine executes plan via ReActAgent
 - **WHEN** the OrchestrationEngine receives a `SessionContext`
-- **THEN** it returns a DAG with one task node and no dependencies
+- **THEN** it delegates to the injected `Agent.call()` to produce a text result
 
-### Requirement: AgentScope-Java integration is configured
-The system SHALL configure an `OpenAIChatModel` bean pointing to Opencode Zen with the DeepSeek V4 Flash Free model.
+### Requirement: Model bean is config-driven
+The system SHALL provide an `OpenAIChatModel` bean configured entirely from `application.yml`, not from hardcoded constants.
 
 #### Scenario: LLM model bean is available
 - **WHEN** the Spring context initializes
-- **THEN** an `OpenAIChatModel` bean MUST be available with `baseUrl=https://opencode.ai/zen/v1/chat/completions` and `modelName=deepseek-v4-flash-free`
+- **THEN** a `Model` bean MUST be available with configuration bound from `orch.llm.*` properties (base-url, endpoint-path, model, api-key, timeout, max-retries)

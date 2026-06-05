@@ -1,0 +1,9 @@
+orch:
+  llm:
+    provider: opencode-zen
+    model: deepseek-v4-flash-free
+    api-key: ${OPENCODE_API_KEY}
+    base-url: https://opencode.ai/zen/v1
+    endpoint-path: /chat/completions
+    timeout: 30s
+    max-retries: 3

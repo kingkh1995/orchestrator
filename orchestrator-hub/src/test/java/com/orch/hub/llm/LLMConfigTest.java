@@ -12,14 +12,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  */
 class LLMConfigTest {
 
+    private static OrchLLMProperties defaultProps() {
+        OrchLLMProperties props = new OrchLLMProperties();
+        props.setBaseUrl("https://opencode.ai/zen/v1");
+        props.setEndpointPath("/chat/completions");
+        return props;
+    }
+
     @Test
     void shouldBuildModelFromProperties() {
-        OrchLLMProperties props = new OrchLLMProperties();
+        OrchLLMProperties props = defaultProps();
         props.setApiKey("test-key");
         props.setModel("deepseek-v4-flash-free");
 
         LLMConfig config = new LLMConfig(props);
-        Model model = config.openCodeZenModel();
+        Model model = config.llmModel();
 
         assertNotNull(model, "Model should be built");
         assertEquals("deepseek-v4-flash-free", model.getModelName(),
@@ -28,12 +35,13 @@ class LLMConfigTest {
 
     @Test
     void shouldExposeTimeoutFromProperties() {
-        OrchLLMProperties props = new OrchLLMProperties();
+        OrchLLMProperties props = defaultProps();
         props.setApiKey("test-key");
         props.setTimeout(java.time.Duration.ofSeconds(45));
+        props.setModel("deepseek-v4-flash-free");
 
         LLMConfig config = new LLMConfig(props);
-        Model model = config.openCodeZenModel();
+        Model model = config.llmModel();
 
         assertNotNull(model, "Model should be built even with custom timeout");
     }

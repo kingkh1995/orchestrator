@@ -45,15 +45,15 @@
 
 ## 4. ReAct Orchestration & LLM Abstraction
 
-- [ ] 4.1 Add `timeout` and `max-retries` fields to `OrchLLMProperties` (defaults: 30s, 3 retries) so config shape is stable before real LLM wiring
-- [ ] 4.2 Create `OrchestrationLLM` interface with `generatePlan(SessionContext)` method in `com.orch.hub.llm` package
-- [ ] 4.3 Implement `OpenCodeZenProvider` using AgentScope-Java's `OpenAIChatModel` (baseUrl=`https://opencode.ai/zen/v1/chat/completions`, modelName=`deepseek-v4-flash-free`)
-- [ ] 4.4 Externalize API key via `OPENCODE_API_KEY` environment variable
-- [ ] 4.5 Add `@PostConstruct` startup validation in `OpenCodeZenProvider`: verify `OPENCODE_API_KEY` is set and reachable (lightweight GET to Opencode Zen endpoint). Log clear error message if missing and fail fast.
-- [ ] 4.6 Create single `OrchestrationEngine` interface with `executePlan(SessionContext)` method in `com.orch.hub.orchestration` package
-- [ ] 4.7 Implement mock `OrchestrationEngine` returning static single-node DAG
-- [ ] 4.8 Register `OrchestrationEngine` as a Spring bean with `@ConditionalOnMissingBean` for easy overrides
-- [ ] 4.9 Add LLM connectivity smoke test: verify `OPENCODE_API_KEY` env var is set, `OrchLLMProperties` loads correctly from `application.yml`, and startup validation passes
+- [x] 4.1 Add `timeout` and `max-retries` fields to `OrchLLMProperties` (values externalized in `application.yml`, no Java defaults)
+- [x] 4.2 Create `OrchestrationLLM` interface with `generatePlan(SessionContext)` method in `com.orch.hub.llm` package
+- [x] 4.3 Implement `DefaultLLMProvider` (was `OpenCodeZenProvider`) using AgentScope-Java's `OpenAIChatModel` with endpoint/config from `application.yml`
+- [x] 4.4 Externalize API key via `OPENCODE_API_KEY` environment variable
+- [x] 4.5 Add `@PostConstruct` startup validation in `LLMEndpointValidator` (was `OpenCodeZenProvider`): lightweight GET to LLM endpoint; log error if unreachable
+- [x] 4.6 Create single `OrchestrationEngine` interface with `executePlan(SessionContext)` method in `com.orch.hub.orchestration` package
+- [x] 4.7 Implement `ReActOrchestrationEngine` (replaces mock) using AgentScope-Java's `ReActAgent` for real reasoning loop
+- [x] 4.8 Register `OrchestrationEngine` as an unconditional Spring bean (no `@ConditionalOnMissingBean`, single engine only)
+- [x] 4.9 Add LLM connectivity smoke test: verify `OPENCODE_API_KEY` env var is set, `OrchLLMProperties` loads correctly from `application.yml`, and startup validation passes
 
 ## 5. RocketMQ Messaging Setup
 
