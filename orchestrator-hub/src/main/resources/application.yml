@@ -1,4 +1,30 @@
 orch:
+  a2a:
+    agent-name: "OrchestratorHub"
+    description: "A2A Multi-Agent Orchestration Hub"
+    version: "0.0.1"
+    public-url: "http://localhost:8080"
+    provider:
+      organization: "Orch"
+      url: "https://github.com/orch"
+    capabilities:
+      streaming: false
+      push-notifications: false
+      state-transition-history: false
+    default-input-modes: []
+    default-output-modes: []
+    documentation-url: null
+  messaging:
+    rocketmq:
+      endpoint: "localhost:8081"  # 5.x broker gRPC port (Local mode: in-process proxy bound to 8081)
+      namespace: "orchestrator-dev"  # Local dev namespace (broker requires non-empty)
+      access-key: ""            # Empty for local dev (no ACL)
+      secret-key: ""
+      work-agent-response-topic: "orch_work_response"
+      work-agent-response-group-id: "orch_work_response_gid"  # No dots — regex ^[%a-zA-Z0-9_-]+$
+      agent-topic: "orch_subagent_requests"   # Default outbound destination; per-agent override via AgentCard
+      agent-url: "http://localhost:8081"      # Default sub-agent card URL (3-segment RocketMQ URL: http://endpoint/namespace/topic)
+      use-default-recover-mode: false
   llm:
     provider: opencode-zen
     model: deepseek-v4-flash-free
@@ -7,3 +33,27 @@ orch:
     endpoint-path: /chat/completions
     timeout: 30s
     max-retries: 3
+
+# Spring Docker Compose: auto-start local RocketMQ stack on app start, stop on shutdown.
+# Default lifecycle is start-and-stop; containers are reused on next start.
+# The compose file lives at the project root, one level above the working dir
+# (which is the orchestrator-hub subproject when running via `bootRun`).
+spring:
+  docker:
+    compose:
+      file: "../docker-compose.yml"
+
+server:
+  tomcat:
+    max-http-form-post-size: 2MB
+  max-http-request-header-size: 8KB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Health is the only actuator endpoint exposed over HTTP by default.
+        # /env, /heapdump, /configprops are intentionally NOT exposed because
+        # they leak environment variables (including OPENCODE_API_KEY) and
+        # bind configuration that may contain secrets.
+        include: health

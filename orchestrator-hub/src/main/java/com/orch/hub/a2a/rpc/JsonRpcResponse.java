@@ -36,6 +36,7 @@ public final class JsonRpcResponse<T> {
     private final String jsonrpc;
 
     @Nullable
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("id")
     private final String id;
 

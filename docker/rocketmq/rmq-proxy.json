@@ -1,0 +1,4 @@
+{
+  "namesrvAddr": "namesrv:9876",
+  "rocketMQClusterName": "DefaultCluster"
+}

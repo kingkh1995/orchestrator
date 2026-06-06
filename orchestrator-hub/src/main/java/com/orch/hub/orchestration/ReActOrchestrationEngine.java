@@ -5,6 +5,7 @@ import io.agentscope.core.agent.Agent;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.MsgRole;
 import io.agentscope.core.message.TextBlock;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -22,19 +23,19 @@ import java.util.List;
  * property-object dependencies.</p>
  */
 @Slf4j
+@RequiredArgsConstructor
 public class ReActOrchestrationEngine implements OrchestrationEngine {
+
+    private static final Duration DEFAULT_CALL_TIMEOUT = Duration.ofSeconds(60);
 
     private final Agent agent;
     private final Duration callTimeout;
 
     public ReActOrchestrationEngine(Agent agent) {
-        this(agent, Duration.ofSeconds(60));
+        this(agent, DEFAULT_CALL_TIMEOUT);
     }
 
-    public ReActOrchestrationEngine(Agent agent, Duration callTimeout) {
-        this.agent = agent;
-        this.callTimeout = callTimeout;
-    }
+
 
     @Override
     public String executePlan(SessionContext context) {
@@ -56,8 +57,6 @@ public class ReActOrchestrationEngine implements OrchestrationEngine {
     }
 
     private static String buildPrompt(SessionContext context) {
-        return "session=" + context.getSessionId()
-                + " tasks=" + context.getTasks()
-                + " states=" + context.getStates();
+        return context.toContextString();
     }
 }

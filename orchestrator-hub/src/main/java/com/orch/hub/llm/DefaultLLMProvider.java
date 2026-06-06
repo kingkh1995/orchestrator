@@ -8,6 +8,7 @@ import io.agentscope.core.message.TextBlock;
 import io.agentscope.core.model.ChatResponse;
 import io.agentscope.core.model.GenerateOptions;
 import io.agentscope.core.model.Model;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -33,11 +34,22 @@ import java.util.stream.Collectors;
  *
  * <p>The provider is stateless with respect to the LLM connection — it relies
  * entirely on the injected {@link Model} for configuration, so callers do not
- * need to pass redundant property objects.
+ * need to pass redundant property objects.</p>
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class DefaultLLMProvider implements OrchestrationLLM {
+
+    /**
+     * Cached {@link DocumentBuilderFactory} with XXE-protective features
+     * pre-applied. ServiceLoader resolution and feature setup are one-time
+     * costs, so the factory is shared; the per-call
+     * {@link DocumentBuilderFactory#newDocumentBuilder() DocumentBuilder}
+     * is still allocated on each parseSteps() invocation because
+     * DocumentBuilder is not thread-safe.
+     */
+    private static final DocumentBuilderFactory DOC_BUILDER_FACTORY = createSafeDocumentBuilderFactory();
 
     static final String PLAN_SYS_PROMPT = """
             You are an orchestration planner. Given a session context (session id, \
@@ -56,12 +68,22 @@ public class DefaultLLMProvider implements OrchestrationLLM {
 
     /** Safety-net timeout for the reactive {@code .block()} call. */
     private static final Duration BLOCK_TIMEOUT = Duration.ofSeconds(30);
+    private static DocumentBuilderFactory createSafeDocumentBuilderFactory() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            // Disable external entities — LLM output is not trusted XML
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        } catch (Exception e) {
+            // Defensive: a missing feature on an exotic JDK should not
+            // crash the whole plan-generation path; parseSteps() will
+            // still catch and log any subsequent parse error.
+        }
+        return factory;
+    }
 
     private final Model model;
-
-    public DefaultLLMProvider(Model model) {
-        this.model = model;
-    }
 
     public String getModelName() {
         return model.getModelName();
@@ -77,7 +99,7 @@ public class DefaultLLMProvider implements OrchestrationLLM {
         String body = model.stream(messages, Collections.emptyList(), options)
                 .map(DefaultLLMProvider::extractText)
                 .filter(s -> !s.isEmpty())
-                .reduce("", (a, b) -> a.isEmpty() ? b : a + b)
+                .collect(Collectors.joining())
                 .block(BLOCK_TIMEOUT);
 
         return new OrchestrationPlan(parseSteps(body));
@@ -92,9 +114,7 @@ public class DefaultLLMProvider implements OrchestrationLLM {
                 Msg.builder()
                         .role(MsgRole.USER)
                         .content(TextBlock.builder()
-                                .text("session=" + context.getSessionId()
-                                        + " tasks=" + context.getTasks()
-                                        + " states=" + context.getStates())
+                                .text(context.toContextString())
                                 .build())
                         .build());
     }
@@ -122,12 +142,7 @@ public class DefaultLLMProvider implements OrchestrationLLM {
             return List.of();
         }
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // Disable external entities — LLM output is not trusted XML
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            DocumentBuilder builder = factory.newDocumentBuilder();
+            DocumentBuilder builder = DOC_BUILDER_FACTORY.newDocumentBuilder();
             Document doc = builder.parse(new InputSource(new StringReader(body)));
             NodeList stepNodes = doc.getElementsByTagName("step");
             List<String> steps = new ArrayList<>(stepNodes.getLength());

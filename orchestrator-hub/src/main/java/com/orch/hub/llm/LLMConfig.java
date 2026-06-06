@@ -4,6 +4,7 @@ import com.orch.hub.config.OrchLLMProperties;
 import io.agentscope.core.model.ExecutionConfig;
 import io.agentscope.core.model.Model;
 import io.agentscope.core.model.OpenAIChatModel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,17 +16,14 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>The built-in retry/backoff machinery ({@link ExecutionConfig}) is used
  * instead of ad-hoc wrapping. When a property is not configured, agentscope's
- * own defaults apply (5-minute timeout, 3 max attempts).
+ * own defaults apply (5-minute timeout, 3 max attempts).</p>
  */
 @Configuration
 @EnableConfigurationProperties(OrchLLMProperties.class)
+@RequiredArgsConstructor
 public class LLMConfig {
 
     private final OrchLLMProperties properties;
-
-    public LLMConfig(OrchLLMProperties properties) {
-        this.properties = properties;
-    }
 
     /**
      * Builds an {@link OpenAIChatModel} configured from {@link OrchLLMProperties}.

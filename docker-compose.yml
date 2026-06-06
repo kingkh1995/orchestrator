@@ -1,0 +1,53 @@
+services:
+  # RocketMQ 5.5.0 NameServer. Required.
+  namesrv:
+    image: apache/rocketmq:5.5.0
+    container_name: orch-rocketmq-namesrv
+    ports:
+      - "9876:9876"
+    command: sh mqnamesrv
+    restart: unless-stopped
+
+  # RocketMQ 5.5.0 Broker + Proxy in same process (Local mode). Per Apache 5.5 quick-start:
+  # "We recommend Local deployment mode, where Broker and Proxy are deployed in the
+  # same process." --enable-proxy flag makes mqbroker start the gRPC proxy in-JVM.
+  # The proxy-specific config (rmq-proxy.json) is bind-mounted and passed via -pc so
+  # users can switch between local / cluster mode and tweak proxy knobs
+  # (rocketMQClusterName, namesrvAddr, etc.) without rebuilding the image.
+  # gRPC port 8081 is bound by the in-process proxy.
+  broker:
+    image: apache/rocketmq:5.5.0
+    container_name: orch-rocketmq-broker
+    ports:
+      - "10911:10911"
+      - "10912:10912"
+      - "8081:8081"
+    environment:
+      NAMESRV_ADDR: namesrv:9876
+      JAVA_OPT_EXT: "-server -Xms512m -Xmx512m -XX:MaxDirectMemorySize=512m"
+    volumes:
+      - ./docker/rocketmq/broker.conf:/home/rocketmq/rocketmq-5.5.0/conf/broker.conf:ro
+      - ./docker/rocketmq/rmq-proxy.json:/home/rocketmq/rocketmq-5.5.0/conf/rmq-proxy.json:ro
+      # Bind mount (not named volume) — Windows Docker Desktop does not honor
+      # named-volume user mapping, leaving the volume root-owned (uid 0), but
+      # the rocketmq process inside the container runs as uid 3000 and
+      # therefore cannot write to the store. The host directory is owned by
+      # the host user and preserves the RocksDB store across container
+      # restarts. .gitignored so the store never enters source control.
+      - ./docker/rocketmq/data:/home/rocketmq/store
+    command: sh mqbroker -n namesrv:9876 -c /home/rocketmq/rocketmq-5.5.0/conf/broker.conf --enable-proxy -pc /home/rocketmq/rocketmq-5.5.0/conf/rmq-proxy.json
+    depends_on:
+      - namesrv
+    restart: unless-stopped
+
+  # RocketMQ Dashboard — web UI at http://localhost:9090.
+  dashboard:
+    image: apacherocketmq/rocketmq-dashboard:latest
+    container_name: orch-rocketmq-dashboard
+    ports:
+      - "9090:8082"
+    environment:
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=namesrv:9876"
+    depends_on:
+      - namesrv
+    restart: unless-stopped

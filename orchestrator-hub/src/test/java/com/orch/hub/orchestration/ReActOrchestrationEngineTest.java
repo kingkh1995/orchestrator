@@ -87,7 +87,6 @@ class ReActOrchestrationEngineTest {
         assertTrue(text.contains("task-1"),
                 "User message should carry the session tasks, got: " + text);
     }
-
     @Test
     void shouldUseExplicitTimeoutConstructor() {
         Agent agent = mock(Agent.class);
@@ -102,5 +101,17 @@ class ReActOrchestrationEngineTest {
         String result = engine.executePlan(new SessionContext("s"));
 
         assertEquals("done", result);
+    }
+
+    @Test
+    void shouldReturnEmptyStringWhenAgentReturnsNull() {
+        Agent agent = mock(Agent.class);
+        when(agent.call(anyList())).thenReturn(Mono.empty());
+
+        ReActOrchestrationEngine engine = new ReActOrchestrationEngine(agent);
+        String result = engine.executePlan(new SessionContext("null-session"));
+
+        assertEquals("", result);
+        verify(agent, times(1)).call(anyList());
     }
 }

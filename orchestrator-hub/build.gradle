@@ -1,12 +1,19 @@
+plugins {
+    // No version here — versions live in the root build.gradle and the
+    // version catalog (gradle/libs.versions.toml). The plugin id alone is
+    // enough for the version to be resolved.
+    id 'org.springframework.boot'
+}
+
 dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
     compileOnly libs.jspecify
 
-
     // Spring Boot
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.docker.compose
 
     // RocketMQ A2A (exclude Quarkus-based reference-jsonrpc which conflicts with Spring Boot)
     implementation(libs.rocketmq.a2a) {

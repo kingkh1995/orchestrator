@@ -2,6 +2,8 @@ package com.orch.hub.llm;
 
 import com.orch.hub.config.OrchLLMProperties;
 import jakarta.annotation.PostConstruct;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,15 +21,17 @@ import java.time.Duration;
  * <p>Runs once after bean construction. A missing API key is logged as an
  * error; a network probe is attempted when the key is present. The probe
  * never throws — startup must not fail-fast on transient network errors
- * so the application remains operable in offline / dev contexts.
+ * so the application remains operable in offline / dev contexts.</p>
  *
  * <p>The probe-time {@link HttpClient} is a one-shot. It holds no
  * long-lived resources beyond internal daemon threads that die with
- * the JVM, so explicit shutdown is unnecessary on Java 17+ (which does
- * not yet expose {@code HttpClient#close()}).
+ * the JVM, so explicit shutdown is unnecessary. ({@code HttpClient}
+ * implements {@link AutoCloseable} since Java 21; the project targets
+ * Java 25.)</p>
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class LLMEndpointValidator {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
@@ -43,12 +47,7 @@ public class LLMEndpointValidator {
                 defaultSender());
     }
 
-    /** Test-only constructor with all dependencies injected directly. */
-    LLMEndpointValidator(URI probeUri, String apiKey, HttpSender sender) {
-        this.probeUri = probeUri;
-        this.apiKey = apiKey;
-        this.sender = sender;
-    }
+
 
     private static URI buildProbeUri(String baseUrl, String endpointPath) {
         if (baseUrl == null) {

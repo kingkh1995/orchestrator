@@ -11,8 +11,8 @@ The system SHALL expose a GET endpoint at `/.well-known/agent.json` that returns
 The system SHALL expose a POST endpoint at `/tasks/send` that accepts a valid A2A Task request and returns a Task response.
 
 #### Scenario: Client submits a task
-- **WHEN** an external client sends POST `/tasks/send` with a JSON body containing `id`, `sessionId`, and `message`
-- **THEN** the system responds with HTTP 200 and a Task JSON with `status` set to `COMPLETED` and a mock `artifact`
+- **WHEN** an external client sends POST `/tasks/send` with a JSON body containing `id`, `message` (where `message.contextId` MAY be set for session continuity)
+- **THEN** the system responds with HTTP 200 and a Task JSON with `status` set to `COMPLETED` and a text artifact built from the orchestration result
 
 ### Requirement: Task status lifecycle follows A2A protocol
 The system SHALL model Task status using the A2A standard states: `SUBMITTED`, `WORKING`, `INPUT_REQUIRED`, `COMPLETED`, `CANCELED`, `FAILED`.

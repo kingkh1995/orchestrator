@@ -12,6 +12,7 @@ settings-gradle.lockfile
 .idea/
 
 # --- Eclipse ---
+.factorypath
 .classpath
 .project
 .settings/
@@ -46,3 +47,13 @@ Thumbs.db
 # --- JVM crash logs ---
 hs_err_pid*
 replay_pid*
+
+# --- Untracked scratch dirs (extracted JARs, debug scripts, smoke test outputs) ---
+# These are session-local artifacts. Never commit; never name a real dir with this prefix.
+/tmp-*/
+tmp-*/
+
+# --- Local RocketMQ RocksDB store (bind-mounted into the broker container) ---
+# Survives container restarts; ephemeral. Persists messages, topic metadata,
+# consumer offsets. Must never enter source control.
+docker/rocketmq/data/

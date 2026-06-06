@@ -8,11 +8,15 @@ agentscope = "1.0.12"
 lombok = "1.18.36"
 jspecify = "1.0.0"
 
-
-
 [libraries]
+# All Spring Boot artifacts below are version-controlled by the
+# spring-boot-dependencies BOM (imported in the root build.gradle's
+# subprojects { dependencyManagement { imports { mavenBom } } } block),
+# so no version is needed on each library entry — only the BOM version
+# is set above in [versions] spring-boot.
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-docker-compose = { module = "org.springframework.boot:spring-boot-docker-compose" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 rocketmq-a2a = { module = "org.apache.rocketmq:rocketmq-a2a", version.ref = "rocketmq-a2a" }
 rocketmq-client-java = { module = "org.apache.rocketmq:rocketmq-client-java", version.ref = "rocketmq-client-java" }
@@ -22,7 +26,6 @@ agentscope = { module = "io.agentscope:agentscope", version.ref = "agentscope" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 
-
-
 [plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }

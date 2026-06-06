@@ -37,12 +37,13 @@ NodeList stepNodes = doc.getElementsByTagName("step");
 - 配置属性用 `@ConfigurationProperties` + `@EnableConfigurationProperties`，**不在属性类上加 `@Component`**
 - 不设 Java 默认值（安全 fallback 除外），全部由 `application.yml` 控制
 - `provider` 用 String（只标识，不做路由）
-- RocketMQ 条件 bean：`@ConditionalOnProperty("orch.messaging.rocketmq.enabled")`，默认 false
+- RocketMQ bean：项目构建在 RocketMQ-A2A 之上，**无条件** 装配（无 `enabled` flag）。`@ComponentScan` 由 `@SpringBootApplication` base package 覆盖，禁止子包重复声明
 - `@Configuration` 只扫描隔离子包
 
 ## 代码风格
 
-<!-- 最近违反：PLAN_SYS_PROMPT 用了 + 拼接；extractText 用了命令式 for 循环 -->
+<!-- 最近违反：Lombok 应当贯穿全项目 -->
+- 凡是 Lombok 能替的样板代码一律替：`@Getter/@Setter` 替字段访问器、`@RequiredArgsConstructor` 替构造器注入、`@Slf4j` 替 Logger 字段、`@UtilityClass` 替静态工具类；禁止写显式 getter/setter/单 final 字段 ctor
 - 多行 `static final String` 用 JDK 17 text block，不用 `+` 拼接
 - 集合处理优先用 Stream API：
 

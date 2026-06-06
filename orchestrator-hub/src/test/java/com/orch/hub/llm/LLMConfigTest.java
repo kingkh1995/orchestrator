@@ -45,4 +45,17 @@ class LLMConfigTest {
 
         assertNotNull(model, "Model should be built even with custom timeout");
     }
+
+    @Test
+    void shouldUseAgentscopeDefaultsWhenTimeoutAndMaxRetriesAreNull() {
+        OrchLLMProperties props = defaultProps();
+        props.setApiKey("test-key");
+        props.setModel("deepseek-v4-flash-free");
+        // timeout and maxRetries left null on purpose
+
+        LLMConfig config = new LLMConfig(props);
+        Model model = config.llmModel();
+
+        assertNotNull(model, "Model should be built with library defaults");
+    }
 }
